@@ -30,6 +30,12 @@ async function getInput() {
         validator: /^\d+$/,
         warning: "Must be a number in mm",
       },
+      {
+        name: "Lengte",
+        requried: true,
+        validator: /^\d+$/,
+        warning: "Must be a number in mm",
+      },
     ]);
     console.clear();
 
@@ -81,6 +87,7 @@ async function getInput() {
     const balk = {
       width: Number(balkPrompt.Breedte),
       depth: Number(balkPrompt.Diepte),
+      length: Number(balkPrompt.Lengte),
     };
 
     const matress = {
@@ -99,7 +106,7 @@ async function getInput() {
     console.log("Bedankt voor je input, dit is wat ik heb ontvangen:\n");
     console.log(
       `Balk:\n${colors.grey(
-        `Breedte: ${balk.width}mm\nLengte: ${balk.depth}mm`
+        `Breedte: ${balk.width}mm\Hoogte: ${balk.depth}mm\nLengte: ${balk.length}mm`
       )}\n`
     );
     console.log(
@@ -269,7 +276,7 @@ const balken = [];
 
 while (sizes.reduce((acc, [, amount]) => acc + amount, 0) > 0) {
   let balkSawSizes = [];
-  let balkSize = 3000;
+  let balkSize = balk.length;
 
   sizes = sizes.map(([length, amount]) => {
     if (balkSize < sizes[sizes.length - 1][0]) {
@@ -291,20 +298,32 @@ while (sizes.reduce((acc, [, amount]) => acc + amount, 0) > 0) {
 }
 
 console.log(
-  `\n\nJe hebt ${colors.green(
-    balken.length
-  )} balken van 3000mm x 45mm x 95mm nodig. Zaag ze als volgt:`
+  `\n\nJe hebt ${colors.green(balken.length)} balken van ${balk.length}mm x ${
+    balk.width
+  }mm x ${
+    balk.depth
+  }mm nodig.\n\nUitgaande van een zaagsnede van ${sawWidth}mm, zaag ze als volgt:`
 );
 balken.forEach((balk, index) => {
   console.log(
-    `Balk ${index + 1} in stukken van ${balk
-      .map((stuk, i) => (balk.length === i + 1 ? `en ${stuk}mm` : `${stuk}mm`))
-      .join(", ")}`
+    `Balk ${index + 1} in ${Object.entries(
+      balk.reduce(
+        (acc, stuk) => ({
+          ...acc,
+          [stuk]: acc[stuk] + 1 || 1,
+        }),
+        {}
+      )
+    )
+      .sort((a, b) => b[0] - a[0])
+      .map(([size, amount]) => `${amount}x ${size}mm`)
+      .join(",")}`
   );
 });
 
 console.log(
   `\nVan de laatste balk blijft ${
-    3000 - balken[balken.length - 1].reduce((acc, balk) => acc + balk + 4, 0)
+    balk.length -
+    balken[balken.length - 1].reduce((acc, balk) => acc + balk + 4, 0)
   }mm over`
 );
